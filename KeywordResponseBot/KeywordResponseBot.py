@@ -88,7 +88,7 @@ class KeywordResponseBot:
             print("reddit.com" + self.current_comment.permalink)
             print(text)
             print("=========")
-            # self.current_comment.reply(self.MSG)
+            self.current_comment.reply(self.MSG)
 
     def check_downvoted_comments(self):
         print("Checking Downvoted Comments")
