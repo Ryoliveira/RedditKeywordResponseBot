@@ -7,9 +7,6 @@ from praw.exceptions import RedditAPIException
 from psaw import PushshiftAPI
 
 
-# TODO Write comments methods (brief description)
-# TODO Write loggers and corresponding files (maybe a folder for errors, info, etc. one for each day)
-
 class KeywordResponseBot:
     KEYWORDS = ["69", "nice"]
     SEARCH_QUERY = "69"
@@ -21,8 +18,7 @@ class KeywordResponseBot:
           "___\n" \
           "^Down ^vote ^for ^me ^to ^remove ^myself. ^(ಥ ͜ʖಥ)"
 
-    def __init__(self, clean_mode):
-        self.clean_mode = clean_mode
+    def __init__(self):
         self.reddit = praw.Reddit(client_id=os.environ.get('CLIENT_ID'),
                                   client_secret=os.environ.get('CLIENT_SECRET'),
                                   user_agent='NiceBot v1.0',
@@ -91,36 +87,28 @@ class KeywordResponseBot:
             self.current_comment.reply(self.MSG)
 
     def check_downvoted_comments(self):
-        print("Checking Downvoted Comments")
+        current_time = time()
         for account_comment in self.reddit.redditor(self.USERNAME).comments.new(limit=100):
-            if account_comment.score <= (1 if self.clean_mode else 0):
+            comment_life_minutes = (current_time - account_comment.created_utc) // 60
+            if account_comment.score < 1 or comment_life_minutes >= 60 and account_comment.score == 1:
                 print("Deleting comment - id: {} | Sub: {} | Parent-Link: {}".format(account_comment.id,
                                                                                      account_comment.subreddit,
                                                                                      account_comment.parent().permalink))
                 account_comment.delete()
 
-    def print_comment_karma(self):
-        comment_karma = self.reddit.redditor(self.USERNAME).comment_karma
-        print(f"Comment Karma -- {comment_karma}")
-
     def run_bot(self):
         self.get_ids()
         self.get_ignore_list()
         self.get_blacklisted_subreddits()
-        print("Clean Mode: {}\n"
-              "Search: {}".format("ON" if self.clean_mode else "OFF",
-                                  "OFF" if self.clean_mode else "ON"))
         start_time = time()
+        self.check_downvoted_comments()
         while True:
             end_time = time()
             seconds = end_time - start_time
             try:
-                # Fix the cleaning logic
-                if not self.clean_mode:
-                    self.search_comments()
+                self.search_comments()
                 if seconds >= 600:
                     start_time = time()
-                    self.print_comment_karma()
                     comment_check = Thread(target=self.check_downvoted_comments)
                     comment_check.start()
             except RedditAPIException as e:
@@ -130,14 +118,12 @@ class KeywordResponseBot:
                     continue
                 self.timed_out_message = e.message
                 self.wait_to_post()
-            except TypeError as e:
-                seconds_to_sleep = 60
-                print(e.message)
-                print(f"Sleeping for {seconds_to_sleep} seconds")
-                sleep(seconds_to_sleep)
+            except:
+                print("an error happened")
+                sleep(60)
 
 
 if __name__ == '__main__':
-    keyword_response_bot = KeywordResponseBot(False)
+    keyword_response_bot = KeywordResponseBot()
     print("Starting NiceBot...")
     keyword_response_bot.run_bot()
