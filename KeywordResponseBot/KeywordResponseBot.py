@@ -8,20 +8,16 @@ from psaw import PushshiftAPI
 
 
 class KeywordResponseBot:
-    KEYWORDS = ["69", "nice"]
-    SEARCH_QUERY = "69"
-    TIME_SINCE_COMMENT_CREATED = "6h"
+    KEYWORDS = []
+    SEARCH_QUERY = ""
+    TIME_SINCE_COMMENT_CREATED = ""
     USERNAME = os.environ.get('USERNAME')
-    MSG = "Nice ( ͡° ͜ʖ ͡°)\n" \
-          "&nbsp;\n\n" \
-          "&nbsp;\n\n" \
-          "___\n" \
-          "^Down ^vote ^for ^me ^to ^remove ^myself. ^(ಥ ͜ʖಥ)"
+    MSG = ""
 
     def __init__(self):
         self.reddit = praw.Reddit(client_id=os.environ.get('CLIENT_ID'),
                                   client_secret=os.environ.get('CLIENT_SECRET'),
-                                  user_agent='NiceBot v1.0',
+                                  user_agent='',
                                   username=self.USERNAME,
                                   password=os.environ.get('PASSWORD'))
         self.api = PushshiftAPI(self.reddit)
@@ -125,5 +121,5 @@ class KeywordResponseBot:
 
 if __name__ == '__main__':
     keyword_response_bot = KeywordResponseBot()
-    print("Starting NiceBot...")
+    print("Starting Bot...")
     keyword_response_bot.run_bot()
